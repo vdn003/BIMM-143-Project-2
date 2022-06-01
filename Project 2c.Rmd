@@ -1,0 +1,142 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
+Introduction)
+
+Scientific question:
+Dermititus is known to go away with age. 10% of children are diagnosed with demritis then grow out of it. Only 1% of adults observe dermatitis. So then the protein linked to dermatitis by being a component in building up the skin barrier(this linkage has currently only been tested in mice studies but the protein is found in both humans and mice) CTIP2 shouldn't really differ in terms of structure between ages. CTIP2 is found to actual be expressed fewer in adult healthy mice then when developing embryos. So then how closely related and similar are the CTIP2 protein in mice is to humans in order to make any assumption that CTIP2 is also linked to dermatitis in humans?
+
+##^^ How can I tighten up my scientific question? Shorten it and make it conciser I guess.
+
+Scientific hypothesis:
+If the human and mouse CTIP2 protein are closely related, then we can assume their structures and links to the dermatitis pathway and other properties of their proteins to also be similar.
+
+
+The first database I'll be utilizing is the NCBI (Nucleotide database) . I can find 2 different gene encoding for Ctip2, one for humans and mice. Then the method I'll be using from method list 1 is Pairwise sequence alignment to analyze the different genes to see how similar. 
+
+Next maybe I could try using PDB to find the different proteins and use Homology Modeling and Structural Bioinformatics to compare them. 
+
+I could use analysis methods like P-values to test the significance of their similarity and 3D protein measurements to check their protein structures.
+
+------------------------------------
+
+The code:
+Loading in Packages)
+```{r}
+#Most of these packages you should already have pre-installed in your R-studio. If not you can use can uncomment the line below to install said packages first and then you are able to load them in with the library function.
+#BiocManager::install(BiocManager)
+#BiocManager::install(Biostrings)
+#BiocManager::install(Seqnir)
+
+library(BiocManager)
+library(Biostrings)
+# ^^ Allows for use of many sequence allighmnet functions, like nucleotideSubsitutionMatrix()
+library(seqinr)
+# ^^ Helps to be able to use sequences in fasta files.
+
+BiocManager::install("DESeq2")
+library("DESeq2")
+
+
+#install readr if not done already, it helps provide statistical methods.
+library(readr)
+
+if(!require('BSDA')){
+  install.packages('BSDA')
+  library('BSDA')
+}
+```
+
+Performing Bioinformatics Analysis)
+
+```{r}
+# Using the first dataset NCBI(Nucleotides) to find the human and mice genes of CTIP2
+Human_CTIP2 <- readAAStringSet(file = "Human CTIP2.fasta")
+Mice_CTIP2 <- readAAStringSet(file = "Mice CTIP2.fasta")
+#^^ Creats a single long string all in uppercase letters
+
+Human_CTIP2read <- read.fasta(file = "Human CTIP2.fasta")  #BP length of 8525
+Mice_CTIP2read <- read.fasta(file = "Mice CTIP2.fasta")    #BP length of 2697
+# ^^ Creates a vector of individual lowercase letters
+
+#https://a-little-book-of-r-for-bioinformatics.readthedocs.io/en/latest/src/chapter4.html
+nucleotidematrix = nucleotideSubstitutionMatrix(match = 2, mismatch = -1, baseOnly = TRUE)
+nucleotidematrix
+
+
+globalAlignsequence1sequence2 = pairwiseAlignment(Human_CTIP2, Mice_CTIP2, substitutionMatrix = nucleotidematrix, gapOpening = -2, gapExtension = -8, scoreOnly = FALSE)
+globalAlignsequence1sequence2
+```
+Such a low score means the two sequences are very similar. Especially with them given the big size difference between the two genes.
+
+
+## Next maybe I could try using PDB to find the different proteins and use Homology Modeling and Structural Bioinformatics to compare them.
+
+^^ I ended up using NCBI(geo) and using differential expression
+
+```{r, error=TRUE}
+
+dataset2 = read.csv("Project 2 dataset2.tgz")
+
+dataset2
+## ^^ Having trouble finding the right second data set for my project.
+
+
+dds = DESeqDataSetFromMatrix(dataset2)
+
+dds = DESeq(dds)
+
+res = results(dds)
+```
+Plotting The Results)
+
+P-value
+```{r, error=TRUE}
+
+
+sd_Human_CTIP2read = sapply(Human_CTIP2read[], sd)
+sd_Human_CTIP2read
+
+sd_Mice_CTIP2read = sapply(Mice_CTIP2read[], sd)
+sd_Mice_CTIP2read
+
+z.test(Human_CTIP2read, Mice_CTIP2read, alternative = "two.sided", mu = 0, sigma.x =sd_Human_CTIP2read, sigma.y = sd_Mice_CTIP2read, conf.level = .95)
+
+```
+
+3D protein
+
+```{r, error= TRUE}
+library(bio3d)
+pdb = read.pdb("3CJW") #human, mouse is 3TNQ
+
+modes = nma(pdb)
+
+print(modes)
+
+plot(modes)
+
+cm = dccm(modes)
+
+plot(cm, sse=pdb)
+
+modes.anhm = nma(pdb, ff="anm")
+
+r = rmsip(modes, modes.anm)
+
+view.modes(modes, mode=7, launch=T)
+
+a = mktrj(modes, mode = 7)
+
+
+```
+
+Analyzing the Results)
+
+Given the small number from the pairwise allignment, then we can probably deduce that the mouse gene and the human gene encoding for the CTIP2 or pretty different. Especially with the great size difference between them.
+
+At least from the previews on the PDB website the protein structures for human vs the mouse seem pretty different and disimilar.
+
+Perhaps from this the linkage of the CTIP2 protein to dermatitis in mice can't also be said the same for humans.
