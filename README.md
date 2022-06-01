@@ -9,6 +9,9 @@ If the human and mouse CTIP2 protein are closely related, then we can assume the
 
 
 Files for needed to run my project 2:
+
 The "Human CTIP2.fasta" file is the nucleotide DNA sequnce for the CTIP2 protein found in humans. For dataset 1.
+
 The "Mouse CTIP2.fasta" file is the nucleotide DNA sequnce for the CTIP2 protein found in mice. For dataset 1.
+
 "Project 2 dataset2.tgz" is the RNAseqdataset for dataset 2.
